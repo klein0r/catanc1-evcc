@@ -41,7 +41,7 @@ jobs:
       - name: Package app
         run: |
           APP=$(ls evcc_*_arm64.app)
-          zip -j "${APP%.app}.zip" "$APP" "${APP%.app}.md5" LICENSE
+          zip -j "${APP%.app}.zip" "$APP" "${APP%.app}.md5" LICENSE LICENSE-evcc
 
       - name: Attach app to release
         env:
@@ -52,7 +52,8 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --clobber
 
-      # GPL-3.0 requires pointing to the Corresponding Source of the bundled image
+      # Point to the source code and licenses of everything in the bundled image,
+      # which also contains GPL components (e.g. BusyBox from Alpine Linux)
       - name: Add source code and license notes to release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -73,9 +74,9 @@ jobs:
 
           This app bundles the unmodified Docker image \`${ORG}:${TAG}\`.
 
-          - **evcc ${TAG}** is licensed under MIT. Source code: https://github.com/evcc-io/evcc/tree/${TAG}
-          - **Packaging** (build script, app manifest, Quadlet unit) is licensed under GPL-3.0. Source code: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${RELEASE_TAG}
-          - The image also contains third-party components under their own licenses: Alpine Linux packages (source: https://gitlab.alpinelinux.org/alpine/aports). Their source code is available from the respective projects.
+          - **evcc ${TAG}** is licensed under MIT (see \`LICENSE-evcc\`). Source code: https://github.com/evcc-io/evcc/tree/${TAG}
+          - **Packaging** (build script, app manifest, Quadlet unit) is licensed under MIT (see \`LICENSE\`). Source code: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/tree/${RELEASE_TAG}
+          - The image also contains third-party components under their own licenses: Alpine Linux packages (source: https://gitlab.alpinelinux.org/alpine/aports) and the Go modules and npm dependencies compiled into the evcc binary (see \`go.mod\` and \`package-lock.json\` in the evcc source). Their source code is available from the respective projects.
           EOF
 
           gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --notes-file "$NOTES"

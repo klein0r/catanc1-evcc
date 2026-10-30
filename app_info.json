@@ -50,6 +50,14 @@
             {
                 "name": "FIRST_OUTGRESS_PORT",
                 "value": "57070"
+            },
+            {
+                "name": "SECOND_INGRESS_PORT",
+                "value": "8887"
+            },
+            {
+                "name": "SECOND_OUTGRESS_PORT",
+                "value": "58887"
             }
         ],
         "quadletFiles": [

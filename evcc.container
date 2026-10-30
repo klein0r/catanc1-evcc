@@ -9,13 +9,25 @@ After=plcnext.service
 [Container]
 ContainerName=evcc-for-plcnext-${APP_ID}
 Image=${IMAGE_NAME}:${IMAGE_TAG}
-Volume=${APP_PERSISTENT_DIR}/data/.evcc:/root/.evcc
+Volume=${APP_PERSISTENT_DIR}/data:/app/data
+# evcc keeps all settings in its database. Its default "~/.evcc/evcc.db"
+# depends on $HOME, so point it to the persistent volume explicitly
+Exec=evcc --database /app/data/evcc.db
 # app_user (1001) and plcnext group (1002), see
 # https://github.com/PLCnext/CatanIO/tree/main/apps#permissions
 User=1001:1002
 GroupAdd=keep-groups
 UserNS=keep-id
+# Web UI
 PublishPort=${FIRST_OUTGRESS_PORT}:${FIRST_INGRESS_PORT}
+# OCPP chargers connect to evcc
+PublishPort=${SECOND_OUTGRESS_PORT}:${SECOND_INGRESS_PORT}
+# RS-485 (1) and RS-485 (2) for Modbus RTU, see
+# https://github.com/PLCnext/CatanIO/tree/main/apps#rs-485
+AddDevice=/dev/ttymxc3
+AddDevice=/dev/ttymxc2
+# All USB devices (e.g. USB RS-485 adapters)
+Volume=/dev/usb-devices:/dev/usb-devices:rslave
 # Use the host's timezone
 Timezone=local
 

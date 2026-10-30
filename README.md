@@ -13,13 +13,43 @@
 
 - Controller - Catan C1 - 1886438 (Phoenix Contact)
 
+## Usage
+
+- Web UI: `http://<ip of the Catan C1>:57070/`
+- Configure evcc in the web UI. All settings are stored in the database `data/evcc.db` in the app's persistent storage, which is kept on app updates. An `evcc.yaml` is not used.
+- OCPP chargers connect to `ws://<ip of the Catan C1>:58887/<station id>`. The evcc UI shows port `8887` instead, which is the port inside the container.
+
+## Serial interfaces
+
+For Modbus RTU meters and chargers, use these device paths in evcc:
+
+| Interface | Device |
+| --- | --- |
+| RS-485 (1) | `/dev/ttymxc3` |
+| RS-485 (2) | `/dev/ttymxc2` |
+| USB serial devices | `/dev/usb-devices/symlinks/...` |
+
+> [!NOTE]
+> USB devices are supported since firmware `2026.0.3`.
+
+USB path (example):
+
+```
+/dev/usb-devices/symlinks/usb-<vendor>_<product>_<serial>-if00-port0
+```
+
 ## WBM
 
 ![plcNextControl](/docs/img/plcNextControl.png)
 
 ## Known issues
 
-- No support for ch340/ch341 chipsets
+- No support for ch340/ch341 chipsets (used by many low-cost USB RS-485 adapters)
+- The container does not use host networking. Devices that need multicast or discovery, such as the SMA Energy Meter / Sunny Home Manager and EEBus, do not work.
+
+## License
+
+The packaging in this repository is licensed under MIT, see [LICENSE](LICENSE). evcc itself is licensed under MIT, see [LICENSE-evcc](LICENSE-evcc).
 
 ## Dev
 
@@ -32,4 +62,4 @@ bash build.sh <app version>   # e.g. bash build.sh 1.2.0
 
 ### Release
 
-Publishing a GitHub release (tag e.g. `v1.2.0`) builds the app with that version and attaches a `.zip` with the `.app`, `.md5` and `LICENSE` files to the release.
+Publishing a GitHub release (tag e.g. `v1.2.0`) builds the app with that version and attaches a `.zip` with the `.app`, `.md5`, `LICENSE` and `LICENSE-evcc` files to the release.
