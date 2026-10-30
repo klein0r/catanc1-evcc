@@ -16,7 +16,8 @@
 ## Usage
 
 - Web UI: `http://<ip of the Catan C1>:57070/`
-- Configure evcc in the web UI. All settings are stored in the database `data/evcc.db` in the app's persistent storage, which is kept on app updates. An `evcc.yaml` is not used.
+- Configure evcc in the web UI. All settings are stored in the database `evcc.db` in the app's persistent storage, which is kept on app updates. An `evcc.yaml` is not used.
+- Persistent data on the controller: `/opt/plcnext/apps/home/data/00000001337002/data/` (`evcc.db`, `evcc.db-shm`, `evcc.db-wal`). For a backup, stop the app first; while evcc is running, `evcc.db` alone may not contain the latest changes.
 - OCPP chargers connect to `ws://<ip of the Catan C1>:58887/<station id>`. The evcc UI shows port `8887` instead, which is the port inside the container.
 
 ## Serial interfaces

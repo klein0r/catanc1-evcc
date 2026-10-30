@@ -43,7 +43,7 @@ There are two kinds of placeholders. Don't mix them up:
 [app_info.json](app_info.json) is the PLCnext app manifest. It declares:
 
 - the version `evcc {IMAGE_TAG} ({VERSION})`, in the PLCnext format `<Name> (<major>.<minor>.<patch>.<build> <state>)`. On updates PLCnext compares only the part in parentheses, so it must be the app version; every evcc bump therefore needs a new app release. `build.sh` only accepts 1 to 4 numeric parts for the app version;
-- the persistent `data` directory, mounted into the container as `/app/data`;
+- the persistent `data` directory, mounted into the container as `/app/data` (on the device: `/opt/plcnext/apps/home/data/00000001337002/data/`);
 - the image and quadlet file paths inside the app (`/image.tar.gz` and `/evcc.container`);
 - the port mappings: container `7070` (evcc web UI) to host `57070`, and container `8887` (OCPP) to host `58887`.
 
