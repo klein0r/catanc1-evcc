@@ -1,0 +1,80 @@
+#!/bin/bash
+
+ORG=docker.io/evcc/evcc
+
+# Fail fast
+set -e
+
+# evcc image tag
+TAG=$(tr -d '[:space:]' < EVCC_VERSION)
+if [ -z "$TAG" ]; then
+    echo "Error: EVCC_VERSION is empty" >&2
+    exit 1
+fi
+
+# App version, independent of the evcc version (e.g. the GitHub release tag).
+# It goes into the parentheses of the manifest version, which is the part
+# PLCnext compares on updates: <major>.<minor>.<patch>.<build> (last three optional)
+VERSION=${1#v}
+if [[ ! "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,3}$ ]]; then
+    echo "Usage: $0 <app version>  (e.g. 1.2.0 or v1.2.0)" >&2
+    exit 1
+fi
+echo "App version: ${VERSION}"
+echo "evcc version: ${TAG}"
+
+# Disable Docker Advertising
+export DOCKER_CLI_HINTS=false
+
+# Get Docker major version
+DOCKER_MAJOR=$(docker version --format '{{.Server.Version}}' | cut -d. -f1)
+
+# We need at least Docker 25 so 'docker save' creates OCI archives
+if (( DOCKER_MAJOR < 25 )); then
+    echo "Error: Docker version must be >= 25. Detected version: $DOCKER_MAJOR" >&2
+    exit 1
+fi
+
+echo "Cleaning up old files.."
+rm -Rf app
+rm -f evcc_*.app
+rm -f evcc_*.md5
+
+echo "Creating app directory..."
+mkdir -p app
+
+echo "Pull Docker image..."
+docker pull --platform linux/arm64 ${ORG}:${TAG}
+
+#ARCH=$(docker inspect --format '{{.Architecture}}' ${ORG}:${TAG})
+#echo "Verify Docker image architecture..."
+#if [ "$ARCH" != "arm64" ]; then
+#    echo "Error: Image must be arm64. Detected archicture: $ARCH" >&2
+#    exit 1
+#fi
+
+echo "Exporting Docker image..."
+docker save --platform linux/arm64 ${ORG}:${TAG} | gzip > app/image.tar.gz
+
+IMAGE_ID_WITH_PREFIX=$(docker inspect --format "{{.Id}}" ${ORG}:${TAG})
+IMAGE_ID=${IMAGE_ID_WITH_PREFIX#sha256:}
+echo "Image ID: ${IMAGE_ID}"
+sed "s|{IMAGE_ID}|${IMAGE_ID}|g" app_info.json > app/app_info.json
+sed "s|{IMAGE_ID}|${IMAGE_ID}|g" evcc.container > app/evcc.container
+
+sed -i "s|{VERSION}|${VERSION}|g" app/app_info.json
+sed -i "s|{IMAGE_TAG}|${TAG}|g" app/app_info.json
+
+IMAGE_IDENTITY=$(docker inspect --format "{{(index .Identity.Pull 0).Repository}}" ${ORG}:${TAG})
+sed -i "s|{IMAGE_IDENTITY}|${IMAGE_IDENTITY}|g" app/app_info.json
+
+echo "Building app..."
+mksquashfs app "evcc_${VERSION}_arm64.app" -force-uid 1001 -force-gid 1002 -quiet
+
+echo "Calculating app checksum..."
+echo `md5sum evcc_${VERSION}_arm64.app | awk '{ print $1 }'` > evcc_${VERSION}_arm64.md5
+
+echo "Cleanup..."
+docker image rm ${ORG}:${TAG}
+
+echo "Done."

@@ -1,0 +1,74 @@
+{
+    "plcnextapp": {
+        "name": "evcc for PLCnext",
+        "identifier": "00000001337002",
+        "version": "evcc {IMAGE_TAG} ({VERSION})",
+        "target": "Catan C1",
+        "minfirmware_version": "26.0.3",
+        "manufacturer": "Matthias Kleine (evcc by andig, naltatis, premultiply)",
+        "licensetype": "Free",
+        "additionalInfo": [
+            {
+                "key": "Documentation link",
+                "value": "Open Documentation",
+                "url": "https://docs.evcc.io/en/",
+                "type": "ExternalLink"
+            },
+            {    
+                "key": "Configuration link",
+                "value": "Open Web UI",
+                "url": "57070/",
+                "type": "PortLink"
+            }
+        ]
+    },
+    "datastorage": {
+        "persistentdata": true,
+        "temporarydata": false,
+        "directoriesToCreate": {
+            "persistent": [
+                {
+                    "path": "data"
+                }
+            ]
+        }
+    },
+    "ocicontainer": {
+        "environmentVariables": [
+            {
+                "name": "IMAGE_NAME",
+                "value": "{IMAGE_IDENTITY}"
+            },
+            {
+                "name": "IMAGE_TAG",
+                "value": "{IMAGE_TAG}"
+            },
+            {
+                "name": "FIRST_INGRESS_PORT",
+                "value": "7070"
+            },
+            {
+                "name": "FIRST_OUTGRESS_PORT",
+                "value": "57070"
+            }
+        ],
+        "quadletFiles": [
+            {
+                "type": "Main",
+                "path": "/evcc.container"
+            }
+        ],
+        "images": [
+            {
+                "name": "{IMAGE_IDENTITY}",
+                "id": "{IMAGE_ID}",
+                "path": "/image.tar.gz"
+            }
+        ]
+    },
+    "updateconfigs": { 
+        "autoupdate_enabled": true,
+        "keep_persistentdata": true,
+        "keep_temporarydata": false
+    }
+}
